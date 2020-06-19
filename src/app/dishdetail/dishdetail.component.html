@@ -43,9 +43,43 @@ fxLayoutGap.xs="0">
           <p matLine>{{comment.comment}}</p>
           <p matLine>{{comment.rating}} Stars</p>
           <p matLine> -- {{comment.author}} {{comment.date | date}}</p>
-
       </mat-list-item>
-    </mat-list>
+      
+    <mat-list-item *ngIf="ratingForm.valid">
+      <p matLine>
+        <span> {{ratingForm.value.comment}}</span>
+      </p>
+      <p matLine>
+        <span> {{ratingForm.value.rating}} </span>
+      </p>
+      <p matLine>
+        <span>--{{ratingForm.value.author}} </span>
+      </p>
+    </mat-list-item>
+  
+</mat-list>   
+    
+
+    <div class="form-size">
+      <form novalidate [formGroup]="ratingForm" #fform="ngForm" (ngSubmit)="onSubmit()">
+        <p>
+          <mat-form-field class="half-width">
+            <input matInput formControlName="author" placeholder="Author" type="text" required>
+            <mat-error *ngIf="formErrors.author">{{formErrors.author}}</mat-error>
+          </mat-form-field>
+        </p>
+        <p matline>
+           <mat-slider thumbLabel tickInterval="1" min="1" max="5" value="5" formControlName="rating">
+           </mat-slider>
+        </p>
+        <p>
+          <mat-form-field class="full-width">
+            <textarea matInput formControlName="comment" placeholder="Your Comment" rows=12></textarea>
+          </mat-form-field>
+        </p>
+        <button type="submit" mat-button class="background-primary text-floral-white"
+                      [disabled]="ratingForm.invalid">Submit</button>
+      </form>
     </div>
 
   
@@ -53,4 +87,5 @@ fxLayoutGap.xs="0">
     <mat-spinner></mat-spinner><h4>Loading . . . Please Wait</h4>
   </div>
 
+</div>
 </div>
