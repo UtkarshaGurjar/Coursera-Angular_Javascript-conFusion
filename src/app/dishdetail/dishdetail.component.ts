@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Inject} from '@angular/core';
 import { Dish } from '../shared/dish';
 import { Location } from '@angular/common';
 import { Params, ActivatedRoute } from '@angular/router';
@@ -6,12 +6,23 @@ import { DishService } from '../services/dish.service';
 import { switchMap } from 'rxjs/operators';
 import { Comment } from '../shared/comment';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import {MatSliderModule, MatFormFieldModule } from '@angular/material';
+import { MatSliderModule, MatFormFieldModule } from '@angular/material';
+import { baseURL } from '../shared/baseurl';
+import {visibility, flyInOut, expand} from '../animations/app.animation';
 
 @Component({
   selector: 'app-dishdetail',
   templateUrl: './dishdetail.component.html',
-  styleUrls: ['./dishdetail.component.scss']
+  styleUrls: ['./dishdetail.component.scss'],
+  host:{
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+  },
+  animations: [
+    flyInOut(),
+    visibility(), 
+    expand()
+  ],
 })
 export class DishdetailComponent implements OnInit {
 
@@ -22,6 +33,8 @@ export class DishdetailComponent implements OnInit {
   ratingForm: FormGroup;
   comment: Comment;
   dishcopy = null;
+  errMess: string;
+  visibility = 'shown';
 
   formErrors = {
     'author': '',
@@ -43,14 +56,17 @@ export class DishdetailComponent implements OnInit {
   constructor(private dishService: DishService,
     private route: ActivatedRoute,
     private location: Location,
-    private fb: FormBuilder) { 
+    private fb: FormBuilder,
+    @Inject('baseURL') public baseURL) {
       this.createForm();
     }
 
     ngOnInit() {
       this.dishService.getDishIds().subscribe(dishIds => this.dishIds = dishIds);
-      this.route.params.pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
-      .subscribe(dish => { this.dish = dish; this.setPrevNext(dish.id); });
+      this.route.params
+      .pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
+      .subscribe(dish => { this.dish = dish; this.dishcopy = dish; this.setPrevNext(dish.id); },
+        errmess => this.errMess = <any>errmess );
     }
   
     createForm() : void {
@@ -102,11 +118,13 @@ export class DishdetailComponent implements OnInit {
   onSubmit() {
     this.comment = this.ratingForm.value;
      this.comment.date = new Date().toISOString();
+     console.log(this.comment);
      this.dishcopy.comments.push(this.comment);
-     this.dishcopy.save()
-      .subscribe(dish => { this.dish = dish; console.log(this.dish); });
-       console.log(this.comment);
-       this.dish.comment.push(this.comment);
+    this.dishService.putDish(this.dishcopy)
+      .subscribe(dish => {
+        this.dish = dish; this.dishcopy = dish;
+      },
+      errmess => { this.dish = null; this.dishcopy = null; this.errMess = <any>errmess; });
        this.ratingForm.reset({
         author: '',
         comment: '',

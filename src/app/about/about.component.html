@@ -59,8 +59,8 @@ fxLayoutGap="10px">
   <h2>Corporate Leadership</h2>
   
   <mat-list>
-    <mat-list-item *ngFor="let leader of leaders">
-      <img matListAvatar src={{leader.image}} alt="...">
+    <mat-list-item *ngFor="let leader of leaders" [@expand]>
+      <img matListAvatar src="{{baseURL + leader.image}}" alt="...">
       <h3 matLine> {{leader.name}} </h3>
       <p matLine>
         <span> {{leader.designation}} </span>
